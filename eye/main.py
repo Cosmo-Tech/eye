@@ -6,6 +6,8 @@ from cosmotech_api.api.runner_api import RunnerApi
 from cosmotech_api.api.run_api import RunApi
 from cosmotech_api import ApiClient, Configuration
 from keycloak import KeycloakOpenID
+from rich.tree import Tree
+from rich.console import Console
 
 class RUON:
   def __init__(self, host="http://localhost:8080"):
@@ -63,13 +65,31 @@ class RUON:
     except Exception as e:
       print(f"error {e}")
 
+def build_tree(manager):
+  console = Console()
+  tree = Tree("Organizations")
+  for organization in manager.organizations:
+    org_node = tree.add(f"{organization.id} {organization.name}")
+    for workspace in manager.workspaces.get(organization.id, []):
+      workspace_node = org_node.add(f"{workspace.id} {workspace.name}")
+      for runner in manager.runners.get((organization.id, workspace.id), []):
+        workspace_node.add(f"{runner.id} {runner.name}")
+    for solution in manager.solutions.get(organization.id, []):
+      org_node.add(f"{solution.id} {solution.name}")
+  return console, tree
+
+
 def main():
-    host = 'http://localhost:8080'
-    manager = RUON(host=host)
-    manager.update_organizations()
-    for organization in manager.organizations:
-      print(organization.id)
-      manager.update_workspaces(organization.id)
-      print(manager.workspaces[organization.id])
+  host = 'http://localhost:8080'
+  manager = RUON(host=host)
+  manager.update_organizations()
+  for organization in manager.organizations:
+    manager.update_workspaces(organization.id)
+    manager.update_solutions(organization.id)
+    for workspace in manager.workspaces[organization.id]:
+      manager.update_runners(organization.id, workspace.id)
+  console, tree = build_tree(manager)
+  console.print(tree)
+
 if __name__ == "__main__":
     main()
