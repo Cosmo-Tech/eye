@@ -41,7 +41,7 @@ class RUON:
 
   def update_solutions(self, organization_id):
     try:
-      self.solutions = self.solution_api_instance.find_all_solutions(organization_id)
+      self.solutions[organization_id] = self.solution_api_instance.find_all_solutions(organization_id)
     except Exception as e:
       print(f"error {e}")
 
@@ -53,7 +53,7 @@ class RUON:
 
   def update_runners(self, organization_id, workspace_id):
     try:
-      self.runners[organization_id,workspace_id] = self.runner_api_instance.find_all_runners(organization_id, workspace_id)
+      self.runners[organization_id,workspace_id] = self.runner_api_instance.list_runners(organization_id, workspace_id)
     except Exception as e:
       print(f"error {e}")
 
