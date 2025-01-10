@@ -71,7 +71,7 @@ class TUI(App):
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
         yield Horizontal(
-            Container(self.tree_view),
+            Container(self.tree_view)
             Container(self.organization_view),
             Container(self.workspace_view),
             Container(self.solution_view)
