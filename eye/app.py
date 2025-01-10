@@ -5,17 +5,6 @@ from textual.widget import Widget
 from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
-class MinExample:
-    def get_organization_list(self):
-        return ["Organization1", "Organization2"]
-
-    def get_workspace_list(self, organization):
-        if organization == "Organization1":
-            return ["Workspace1", "Workspace2"]
-        elif organization == "Organization2":
-            return ["workspace4"]
-        else:
-            return ["workspace5"]
 
 class Solution(Widget):
     def __init__(self, manager, organization,**kwargs):
@@ -71,7 +60,7 @@ class TUI(App):
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
         yield Horizontal(
-            Container(self.tree_view)
+            Container(self.tree_view),
             Container(self.organization_view),
             Container(self.workspace_view),
             Container(self.solution_view)
@@ -79,8 +68,9 @@ class TUI(App):
 
     def build_tree(self):
       tree = Tree("Organizations")
+      tree.root.expand()
       for organization in self.manager.organizations:
-        org_node = tree.root.add(f"{organization.id} {organization.name}")
+        org_node = tree.root.add(f"{organization.id} {organization.name}", expand=True)
         for workspace in self.manager.workspaces.get(organization.id, []):
           workspace_node = org_node.add(f"{workspace.id} {workspace.name}")
           for runner in self.manager.runners.get((organization.id, workspace.id), []):
@@ -109,6 +99,5 @@ if __name__ == "__main__":
       manager.update_solutions(organization.id)
       for workspace in manager.workspaces[organization.id]:
         manager.update_runners(organization.id, workspace.id)
-    #manager = MinExample()
     app = TUI(manager)
     app.run()
