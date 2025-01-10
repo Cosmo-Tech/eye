@@ -11,6 +11,8 @@ dependencies = [
     "python-keycloak~=5.1.1",
     "python-dotenv",
     "rich>=13.9.4",
+    "textual>=1.0.0",
+    "textual-dev>=1.7.0",
 ]
 
 [build-system]
