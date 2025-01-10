@@ -45,10 +45,10 @@ class RUON:
     return [organization.id for organization in self.organizations]
 
   def get_solution_list(self, organization_id):
-    return [(solution.id, solution.name) for solution in self.solutions.get(organization_id, [])]
+    return [f"{solution.id}\n{solution.name}" for solution in self.solutions.get(organization_id, [])]
 
   def get_workspace_list(self, organization_id):
-    return [workspace.id for workspace in self.workspaces.get(organization_id, [])]
+    return [f"{workspace.id}\n{workspace.name}" for workspace in self.workspaces.get(organization_id, [])]
 
   def get_runner_list(self, organization_id, workspace_id):
     return [(runner.id, runner.name) for runner in self.runners.get((organization_id, workspace_id), [])]
