@@ -5,6 +5,7 @@ from textual.widget import Widget
 from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
+from pathlib import Path
 
 
 class Solution(Widget):
@@ -43,26 +44,20 @@ class Workspace(Widget):
         for item in workspaces:
             self.workspace_view.append(ListItem(Label(item)))
 
-class PlaceholderView(Container):
+class Security(Container):
+
     def __init__(self, manager, **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
 
     def compose(self) -> ComposeResult:
-        # Create DataTable widget
-        table = DataTable()
-        
-        # Get security data
-        df = self.manager.get_security_dataframe()
-        
-        # Add columns (including index)
-        table.add_columns("User", *df.columns.tolist())
-        
-        # Add rows
-        for idx, row in df.iterrows():
-            table.add_row(idx, *row.tolist())
-            
-        yield table
+      table = DataTable(id = "security")
+      table.border_title = "Security"
+      df = self.manager.get_security_dataframe()
+      table.add_columns("User", *df.columns.tolist())
+      for idx, row in df.iterrows():
+        table.add_row(idx, *row.tolist())
+      yield table
 
 class TUI(App):
     BINDINGS = [
@@ -70,6 +65,7 @@ class TUI(App):
         ("q", "quit", "Quit"),
         ("s", "switch_view", "Switch View")
     ]
+    CSS_PATH = Path(__file__).parent / "styles.tcss"
     active_organization = reactive("")
     
     def __init__(self, manager) -> None:
@@ -89,14 +85,17 @@ class TUI(App):
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
         self.pretty_view = Pretty({}, id = "pretty")
-        
+        self.security_view = Security(self.manager, id="security_view")
         # Main view components
+        self.solution_view = Static("adeio1")
+        self.workspace_view = Static("adeio2")
         self.main_container = Container(
             Horizontal(
                 Container(self.tree_view),
                 Container(
-                    self.organization_view,
-                    self.pretty_view,
+                    self.security_view,
+                    #self.organization_view,
+                    #self.pretty_view,
                     self.workspace_view,
                     self.solution_view
                                     )
@@ -105,9 +104,8 @@ class TUI(App):
         )
         
         # Alternative view
-        self.alt_container = PlaceholderView(self.manager, id="alt_view")
+        self.alt_container = Static("adeio")
         self.alt_container.display = False
-        
         yield self.main_container
         yield self.alt_container
 
