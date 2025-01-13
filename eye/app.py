@@ -1,10 +1,11 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Tree, Footer, Header, ListView, ListItem, Label
+from textual.widgets import Pretty, Tree, Footer, Header, ListView, ListItem, Label
 from textual.containers import Horizontal, Container
 from textual.widget import Widget
 from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
+
 
 class Solution(Widget):
     def __init__(self, manager, organization,**kwargs):
@@ -59,24 +60,30 @@ class TUI(App):
         self.workspace_view = Workspace(self.manager, self.active_organization, id="workspaces")
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
+        self.pretty_view = Pretty({}, id = "pretty")
         yield Horizontal(
             Container(self.tree_view),
-            Container(self.organization_view),
-            Container(self.workspace_view),
-            Container(self.solution_view)
+            Container(self.pretty_view)
+#            Container(self.organization_view),
+#            Container(self.workspace_view),
+#            Container(self.solution_view)
         )
 
     def build_tree(self):
-      tree = Tree("Organizations")
+      tree = Tree("Objects", id="object_view")
       tree.root.expand()
       for organization in self.manager.organizations:
-        org_node = tree.root.add(f"{organization.id} {organization.name}", expand=True)
+        org_node = tree.root.add(organization.id, expand=True)
         for workspace in self.manager.workspaces.get(organization.id, []):
-          workspace_node = org_node.add(f"{workspace.id} {workspace.name}")
+          workspace_node = org_node.add(workspace.id)
+          workspace_node.data = {"organization":organization.id}
           for runner in self.manager.runners.get((organization.id, workspace.id), []):
-            workspace_node.add(f"{runner.id} {runner.name}")
+            runner_node = workspace_node.add(runner.id)
+            runner_node.data = {"organization":organization.id,
+                                "workspace":workspace.id}
         for solution in self.manager.solutions.get(organization.id, []):
-          org_node.add(f"{solution.id} {solution.name}")
+          solution_node = org_node.add(solution.id)
+          solution_node.data = {"organization":organization.id}
       return tree
 
 
@@ -86,6 +93,10 @@ class TUI(App):
         self.active_organization = message.item.name
         self.workspace_view.update_workspaces(organization)
         self.solution_view.update_solutions(organization)
+
+    @on(Tree.NodeSelected, "#object_view")
+    def node_selected(self, message: Tree.NodeSelected) -> None:
+        self.pretty_view.update(message.node.data)
 
     def action_help(self) -> None:
         print("Need some help!")
