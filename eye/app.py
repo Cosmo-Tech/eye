@@ -46,18 +46,28 @@ class Workspace(Widget):
 
 class Security(Container):
 
-    def __init__(self, manager, **kwargs):
+    def __init__(self, manager, organization, **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
+        self.organization = organization
 
     def compose(self) -> ComposeResult:
       table = DataTable(id = "security")
       table.border_title = "Security"
-      df = self.manager.get_security_dataframe()
+      df = self.manager.get_security_dataframe(self.organization)
       table.add_columns("User", *df.columns.tolist())
       for idx, row in df.iterrows():
         table.add_row(idx, *row.tolist())
       yield table
+
+    def update_security(self, organization) -> None:
+        self.organization = organization
+        table = self.query_one("#security", DataTable)
+        df = self.manager.get_security_dataframe(self.organization)
+        table.clear()
+        table.add_columns("User", *df.columns.tolist())
+        for idx, row in df.iterrows():
+            table.add_row(idx, *row.tolist())
 
 class TUI(App):
     BINDINGS = [
@@ -81,22 +91,24 @@ class TUI(App):
         
         organizations = [ListItem(Label(item)) for item in self.manager.get_organization_list()]
         self.organization_view = ListView(*organizations, id="organizations_view")
+        self.organization_view.border_title="Organizations"
         self.workspace_view = Workspace(self.manager, self.active_organization, id="workspaces")
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
         self.pretty_view = Pretty({}, id = "pretty")
-        self.security_view = Security(self.manager, id="security_view")
+        self.security_view = Security(self.manager, self.active_organization, id="security_view")
         # Main view components
         self.solution_view = Static("adeio1")
-        self.workspace_view = Static("adeio2")
+        #self.workspace_view = Static("adeio2")
         self.main_container = Container(
             Horizontal(
                 Container(self.tree_view),
                 Container(
+                    self.organization_view,
                     self.security_view,
                     #self.organization_view,
                     #self.pretty_view,
-                    self.workspace_view,
+                    #self.workspace_view,
                     self.solution_view
                                     )
             ),
@@ -131,8 +143,9 @@ class TUI(App):
     def organization_changed(self, message: ListView.Highlighted) -> None:
         organization = message.item.query_one(Label).renderable
         self.active_organization = message.item.name
-        self.workspace_view.update_workspaces(organization)
-        self.solution_view.update_solutions(organization)
+        self.security_view.update_security(organization)
+        # self.workspace_view.update_workspaces(organization)
+        # self.solution_view.update_solutions(organization)
 
     @on(Tree.NodeSelected, "#object_view")
     def node_selected(self, message: Tree.NodeSelected) -> None:

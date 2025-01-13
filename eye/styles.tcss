@@ -1,3 +1,6 @@
 #security {
   border: round violet;
 }
+#organizations_view{
+  border: round violet;
+}
