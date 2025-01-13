@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Pretty, Tree, Footer, Header, ListView, ListItem, Label
+from textual.widgets import DataTable, Pretty, Tree, Footer, Header, ListView, ListItem, Label, Static
 from textual.containers import Horizontal, Container
 from textual.widget import Widget
 from textual.reactive import reactive
@@ -43,31 +43,73 @@ class Workspace(Widget):
         for item in workspaces:
             self.workspace_view.append(ListItem(Label(item)))
 
+class PlaceholderView(Container):
+    def __init__(self, manager, **kwargs):
+        super().__init__(**kwargs)
+        self.manager = manager
+
+    def compose(self) -> ComposeResult:
+        # Create DataTable widget
+        table = DataTable()
+        
+        # Get security data
+        df = self.manager.get_security_dataframe()
+        
+        # Add columns (including index)
+        table.add_columns("User", *df.columns.tolist())
+        
+        # Add rows
+        for idx, row in df.iterrows():
+            table.add_row(idx, *row.tolist())
+            
+        yield table
+
 class TUI(App):
-    BINDINGS = [("h", "help", "Help"),("q", "quit", "Quit")]
+    BINDINGS = [
+        ("h", "help", "Help"),
+        ("q", "quit", "Quit"),
+        ("s", "switch_view", "Switch View")
+    ]
     active_organization = reactive("")
+    
     def __init__(self, manager) -> None:
         super().__init__()
         self.organization_view = ListView()
         self.manager = manager
+        self.is_main_view = True
 
     def compose(self) -> ComposeResult:
         """Create children for layout"""
         yield Header()
         yield Footer()
+        
         organizations = [ListItem(Label(item)) for item in self.manager.get_organization_list()]
         self.organization_view = ListView(*organizations, id="organizations_view")
         self.workspace_view = Workspace(self.manager, self.active_organization, id="workspaces")
         self.solution_view = Solution(self.manager, self.active_organization, id="solutions")
         self.tree_view = self.build_tree()
         self.pretty_view = Pretty({}, id = "pretty")
-        yield Horizontal(
-            Container(self.tree_view),
-            Container(self.pretty_view)
-#            Container(self.organization_view),
-#            Container(self.workspace_view),
-#            Container(self.solution_view)
+        
+        # Main view components
+        self.main_container = Container(
+            Horizontal(
+                Container(self.tree_view),
+                Container(
+                    self.organization_view,
+                    self.pretty_view,
+                    self.workspace_view,
+                    self.solution_view
+                                    )
+            ),
+            id="main_view"
         )
+        
+        # Alternative view
+        self.alt_container = PlaceholderView(self.manager, id="alt_view")
+        self.alt_container.display = False
+        
+        yield self.main_container
+        yield self.alt_container
 
     def build_tree(self):
       tree = Tree("Objects", id="object_view")
@@ -100,6 +142,12 @@ class TUI(App):
 
     def action_help(self) -> None:
         print("Need some help!")
+
+    def action_switch_view(self) -> None:
+        """Toggle between main and alternative views"""
+        self.is_main_view = not self.is_main_view
+        self.main_container.display = self.is_main_view
+        self.alt_container.display = not self.is_main_view
 
 if __name__ == "__main__":
     host = 'http://localhost:8080'
