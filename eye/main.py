@@ -8,7 +8,7 @@ from cosmotech_api import ApiClient, Configuration
 from keycloak import KeycloakOpenID
 from rich.tree import Tree
 from rich.console import Console
-
+import pandas as pd
 class RUON:
   def __init__(self, host="http://localhost:8080"):
     self.configuration = Configuration(host)
@@ -77,6 +77,63 @@ class RUON:
     except Exception as e:
       print(f"error {e}")
 
+  def get_organization_security(self, org_id):
+      """Extract security info for a single organization"""
+      try:
+          org_security = self.organization_api_instance.get_organization_security(org_id)
+          return {
+              acl.id: {'role': acl.role, 'org_id': org_id}
+              for acl in org_security.access_control_list
+          }
+      except Exception as e:
+          print(f"Error getting organization security for {org_id}: {e}")
+          return {}
+
+  def get_workspace_security(self, org_id, workspace_id):
+      """Extract security info for a single workspace"""
+      try:
+          ws_security = self.workspace_api_instance.get_workspace_security(org_id, workspace_id)
+          return {
+              acl.id: {'role': acl.role, 'org_id': org_id, 'workspace_id': workspace_id}
+              for acl in ws_security.access_control_list
+          }
+      except Exception as e:
+          print(f"Error getting workspace security for {workspace_id}: {e}")
+          return {}
+
+
+  def get_security_dataframe(self):
+      """Return security info as pandas DataFrame"""
+      data = []
+      
+      for org in self.organizations:
+          # Get organization security
+          org_security = self.get_organization_security(org.id)
+          
+          # Get workspace security
+          workspaces = self.workspaces.get(org.id, [])
+          for user, user_data in org_security.items():
+              row = {
+                  'user': user,
+                  f'{org.id}_role': user_data['role']
+              }
+              
+              # Add workspace roles for this user
+              for workspace in workspaces:
+                  ws_security = self.get_workspace_security(org.id, workspace.id)
+                  ws_role = ws_security.get(user, {}).get('role', '-')
+                  row[f'{org.id}_{workspace.id}_role'] = ws_role
+              
+              data.append(row)
+      
+      # Create DataFrame and set user as index
+      df = pd.DataFrame(data)
+      if not df.empty:
+          df.set_index('user', inplace=True)
+      
+      return df
+
+
 def build_tree(manager):
   console = Console()
   tree = Tree("Organizations")
@@ -88,6 +145,7 @@ def build_tree(manager):
         workspace_node.add(f"{runner.id} {runner.name}")
     for solution in manager.solutions.get(organization.id, []):
       org_node.add(f"{solution.id} {solution.name}")
+  breakpoint()
   return console, tree
 
 
