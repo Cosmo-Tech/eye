@@ -10,13 +10,12 @@ from textual.widgets import (
     Label,
     Static,
 )
-from textual.containers import Horizontal, Container, Vertical
+from textual.containers import Horizontal, Container, Vertical, VerticalScroll
 from textual.widget import Widget
 from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
 from pathlib import Path
-import pandas as pd
 
 
 class Solution(Widget):
@@ -135,7 +134,7 @@ class TUI(App):
                     self.organization_view,
                     #                    self.security_view,
                     # self.organization_view,
-                    self.pretty_view,
+                    VerticalScroll(self.pretty_view),
                     # self.workspace_view,
                     #                    self.solution_view
                 ),
@@ -157,9 +156,10 @@ class TUI(App):
         tree.root.expand()
         for organization in self.manager.organizations:
             org_node = tree.root.add(organization.id, expand=True)
+            org_node.data = organization
             for workspace in self.manager.workspaces.get(organization.id, []):
                 workspace_node = org_node.add(workspace.id)
-                workspace_node.data = {"organization": organization.id}
+                workspace_node.data = workspace
                 for runner in self.manager.runners.get(
                     (organization.id, workspace.id), []
                 ):
@@ -170,7 +170,7 @@ class TUI(App):
                     }
             for solution in self.manager.solutions.get(organization.id, []):
                 solution_node = org_node.add(solution.id)
-                solution_node.data = {"organization": organization.id}
+                solution_node.data = solution
         return tree
 
     @on(ListView.Highlighted, "#organizations_view")
