@@ -10,11 +10,13 @@ from rich.tree import Tree
 from rich.console import Console
 import pandas as pd
 from rich.pretty import pprint
+import time
 class RUON:
     def __init__(self, host="http://localhost:8080"):
         self.configuration = Configuration(host)
         self.load_token()
         self.workspaces = {}
+        self.organizations = {}
         self.solutions = {}
         self.runners = {}
         self.run = {}
@@ -25,16 +27,23 @@ class RUON:
         self.runner_api_instance = RunnerApi(api_client)
         self.run_api_instance = RunApi(api_client)
 
+    def refresh_token(self):
+        try:
+            token = self.keycloak_openid.token(grant_type="client_credentials")
+            self.configuration.access_token = token["access_token"]
+            self.token_expiry = time.time() + token["expires_in"]
+        except Exception as e:
+            raise RuntimeError(f"Failed to refresh token: {e}")
+
     def load_token(self):
-        config = dotenv_values(".env")
-        keycloak_openid = KeycloakOpenID(
-            server_url=config["server_url"],
-            client_id=config["client_id"],
-            realm_name=config["realm_name"],
-            client_secret_key=config["client_secret"],
+        self.config = dotenv_values(".env")
+        self.keycloak_openid = KeycloakOpenID(
+            server_url=self.config["server_url"],
+            client_id=self.config["client_id"],
+            realm_name=self.config["realm_name"],
+            client_secret_key=self.config["client_secret"],
         )
-        token = keycloak_openid.token(grant_type="client_credentials")
-        self.configuration.access_token = token["access_token"]
+        self.refresh_token()
 
     def update_organizations(self):
         try:

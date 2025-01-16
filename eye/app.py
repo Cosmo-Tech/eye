@@ -16,7 +16,7 @@ from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
 from pathlib import Path
-
+from rich.text import Text
 
 class Solution(Widget):
     def __init__(self, manager, organization, **kwargs):
@@ -87,6 +87,16 @@ class Security(Container):
         for idx, row in df.iterrows():
             table.add_row(idx, *row.tolist())
 
+class ConfigLabel(Label):
+    def __init__(self, label_text: str, value_text: str) -> None:
+        super().__init__("")
+        self.label_text = label_text
+        self.value_text = value_text
+
+    def on_mount(self):
+        self.mount(
+            Label(f"[bold]{self.label_text}:[/] {self.value_text}")
+        )
 
 class TUI(App):
     BINDINGS = [
@@ -105,7 +115,16 @@ class TUI(App):
 
     def compose(self) -> ComposeResult:
         """Create children for layout"""
-        yield Header()
+        yield Header(icon="⏿",
+                     show_clock=True,
+                     )
+
+        yield VerticalScroll(
+            ConfigLabel("host", self.manager.configuration.host),
+            ConfigLabel("server_url", self.manager.config['server_url']),
+            ConfigLabel("client_id", self.manager.config['client_id']),
+            ConfigLabel("realm_name", self.manager.config['realm_name'])
+        )
         yield Footer()
 
         organizations = [
