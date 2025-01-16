@@ -119,18 +119,19 @@ class TUI(App):
                      show_clock=True,
                      )
 
-        yield VerticalScroll(
+        yield Vertical(
             ConfigLabel("host", self.manager.configuration.host),
             ConfigLabel("server_url", self.manager.config['server_url']),
             ConfigLabel("client_id", self.manager.config['client_id']),
-            ConfigLabel("realm_name", self.manager.config['realm_name'])
+            ConfigLabel("realm_name", self.manager.config['realm_name']),
+            id = "config-info"
         )
         yield Footer()
 
         organizations = [
             ListItem(Label(item)) for item in self.manager.get_organization_list()
         ]
-        self.organization_view = ListView(*organizations, id="organizations_view")
+        self.organization_view = ListView(*organizations, id="organization-view")
         self.organization_view.border_title = "Organizations"
         self.workspace_view = Workspace(
             self.manager, self.active_organization, id="workspaces"
@@ -139,29 +140,23 @@ class TUI(App):
             self.manager, self.active_organization, id="solutions"
         )
         self.tree_view = self.build_tree()
+        self.tree_view.border_title = "Object tree"
+
         self.pretty_view = Pretty({}, id="pretty")
         self.security_view = Security(
             self.manager, self.active_organization, id="security_view"
         )
         # Main view components
-        self.solution_view = Static("adeio1")
-        # self.workspace_view = Static("adeio2")
         self.main_container = Container(
             Horizontal(
-                Container(self.tree_view),
+                Container(self.tree_view, id="tree-view"),
                 Container(
                     self.organization_view,
-                    #                    self.security_view,
-                    # self.organization_view,
-                    VerticalScroll(self.pretty_view),
-                    # self.workspace_view,
-                    #                    self.solution_view
+                    VerticalScroll(self.pretty_view, id="detail-view"),
                 ),
             ),
             id="main_view",
         )
-
-        # Alternative view
         # Security view
         self.users_container = Container(
             Vertical(self.organization_view, self.security_view)

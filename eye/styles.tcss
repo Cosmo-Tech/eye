@@ -1,6 +1,16 @@
 #security {
-  border: round violet;
+  border: round $primary;
 }
-#organizations_view{
-  border: round violet;
+#organization-view{
+  border: round $primary;
+}
+#config-info{
+  border: round $primary;
+  height: auto;
+}
+#tree-view{
+  border: round $primary;
+}
+#detail-view{
+  border: round $primary;
 }
