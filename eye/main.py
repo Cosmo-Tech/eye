@@ -8,24 +8,65 @@ from cosmotech_api import ApiClient, Configuration
 from keycloak import KeycloakOpenID
 from rich.tree import Tree
 from rich.console import Console
+from rich.logging import RichHandler
 import pandas as pd
 from rich.pretty import pprint
 import time
+import logging
+
+# Configure Rich logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True, markup=True)]
+)
+logger = logging.getLogger("eye")
+
 class RUON:
     def __init__(self, host="http://localhost:8080"):
-        self.configuration = Configuration(host)
-        self.load_token()
-        self.workspaces = {}
-        self.organizations = {}
-        self.solutions = {}
-        self.runners = {}
-        self.run = {}
-        api_client = ApiClient(self.configuration)
-        self.organization_api_instance = OrganizationApi(api_client)
-        self.solution_api_instance = SolutionApi(api_client)
-        self.workspace_api_instance = WorkspaceApi(api_client)
-        self.runner_api_instance = RunnerApi(api_client)
-        self.run_api_instance = RunApi(api_client)
+        logger.info(f"[bold blue]Initializing RUON[/] with host: {host}")
+        start_time = time.time()
+        
+        try:
+            self.config = dotenv_values(".env")
+            logger.debug("Loaded environment configuration")
+            self.configuration = Configuration(host)
+            
+            # Initialize empty collections
+            self.workspaces = {}
+            self.organizations = {}
+            self.solutions = {}
+            self.runners = {}
+            self.run = {}
+            
+            # Create API client and instances
+            api_client = ApiClient(self.configuration)
+            self.organization_api_instance = OrganizationApi(api_client)
+            self.solution_api_instance = SolutionApi(api_client)
+            self.workspace_api_instance = WorkspaceApi(api_client)
+            self.runner_api_instance = RunnerApi(api_client)
+            self.run_api_instance = RunApi(api_client)
+            
+            elapsed = time.time() - start_time
+            logger.info(f"[green]✓[/] RUON initialized in {elapsed:.2f}s")
+            
+        except Exception as e:
+            logger.error(f"[red]Failed to initialize RUON:[/] {str(e)}")
+            raise
+
+    def connect(self):
+        logger.info("[yellow]Attempting connection...[/]")
+        try:
+            self.load_token()
+            logger.info("[green]✓ Connected successfully[/]")
+        except Exception as e:
+            logger.error(f"[red]Connection failed:[/] {str(e)}")
+            raise
+
+    def connected(self):
+        logger.debug(f"always say yes")
+        return True
 
     def refresh_token(self):
         try:
@@ -36,7 +77,7 @@ class RUON:
             raise RuntimeError(f"Failed to refresh token: {e}")
 
     def load_token(self):
-        self.config = dotenv_values(".env")
+        self.config = dotenv_values(".env") # refresh
         self.keycloak_openid = KeycloakOpenID(
             server_url=self.config["server_url"],
             client_id=self.config["client_id"],
@@ -49,7 +90,7 @@ class RUON:
         try:
             self.organizations = self.organization_api_instance.find_all_organizations()
         except Exception as e:
-            print(f"error {e}")
+            logger.error(f"error {e}")
 
     def get_organization_list(self):
         return [organization.id for organization in self.organizations]
@@ -159,6 +200,7 @@ def build_tree(manager):
 def main():
     host = "http://localhost:8080"
     manager = RUON(host=host)
+    manager.connect()
     manager.update_organizations()
     for organization in manager.organizations:
         manager.update_workspaces(organization.id)
