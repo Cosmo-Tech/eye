@@ -21,7 +21,7 @@ logging.basicConfig(
     datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True, markup=True)]
 )
-logger = logging.getLogger("eye")
+logger = logging.getLogger("back")
 
 class RUON:
     def __init__(self, host="http://localhost:8080"):

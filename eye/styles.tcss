@@ -14,3 +14,10 @@
 #detail-view{
   border: round $primary;
 }
+#connection-indicator{
+  height: auto;
+  width: auto;
+}
+#config-parameters{
+  height: auto;
+}

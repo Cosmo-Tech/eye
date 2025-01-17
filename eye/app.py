@@ -17,6 +17,20 @@ from textual import on
 from eye.main import RUON
 from pathlib import Path
 from rich.text import Text
+from rich.logging import RichHandler
+import logging
+
+# Create loggers
+
+logger = logging.getLogger("back.front")
+action_logger = logging.getLogger("back.front.actions")
+
+class ConnectionStatus(Static):
+    is_connected = reactive(False)
+
+    def watch_is_connected(self, connected: bool) -> None:
+        """React to connection status changes"""
+        self.update(f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}")
 
 class Solution(Widget):
     def __init__(self, manager, organization, **kwargs):
@@ -106,25 +120,32 @@ class TUI(App):
     ]
     CSS_PATH = Path(__file__).parent / "styles.tcss"
     active_organization = reactive("")
+    connection_status = reactive(False) # start offline
 
-    def __init__(self, manager) -> None:
+    def __init__(self) -> None:
+        logger.info("Initializing TUI application")
         super().__init__()
         self.organization_view = ListView()
-        self.manager = manager
+        host = "http://localhost:8080"
+        self.manager = RUON(host=host)
         self.is_main_view = True
+        self.status_indicator = ConnectionStatus(id="connection-indicator")
 
     def compose(self) -> ComposeResult:
         """Create children for layout"""
+        logger.debug("Building UI layout")
         yield Header(icon="⏿",
                      show_clock=True,
                      )
-
-        yield Vertical(
-            ConfigLabel("host", self.manager.configuration.host),
-            ConfigLabel("server_url", self.manager.config['server_url']),
-            ConfigLabel("client_id", self.manager.config['client_id']),
-            ConfigLabel("realm_name", self.manager.config['realm_name']),
-            id = "config-info"
+        yield Horizontal(
+            Vertical(
+              ConfigLabel("host", self.manager.configuration.host),
+              ConfigLabel("server_url", self.manager.config['server_url']),
+              ConfigLabel("client_id", self.manager.config['client_id']),
+              ConfigLabel("realm_name", self.manager.config['realm_name']),
+              id = "config-parameters"
+            ),
+            self.status_indicator, id = "config-info"
         )
         yield Footer()
 
@@ -164,6 +185,7 @@ class TUI(App):
         self.users_container.display = False
         yield self.main_container
         yield self.users_container
+        logger.info("UI layout completed")
 
     def build_tree(self):
         tree = Tree("Objects", id="object_view")
@@ -187,6 +209,15 @@ class TUI(App):
                 solution_node.data = solution
         return tree
 
+    def on_mount(self) -> None:
+        """Handle mount event"""
+        logger.info("TUI mounted")
+        try:
+            self.manager.connect()
+            self.status_indicator.is_connected = True
+        except Exception as e:
+            logger.error(e)
+            
     @on(ListView.Highlighted, "#organizations_view")
     def organization_changed(self, message: ListView.Highlighted) -> None:
         organization = message.item.query_one(Label).renderable
@@ -202,21 +233,26 @@ class TUI(App):
     def action_help(self) -> None:
         print("Need some help!")
 
-    def action_switch_view(self) -> None:
-        """Toggle between main and alternative views"""
+    async def action_quit(self) -> None:
+        """Quit the application"""
+        action_logger.info("User initiated quit")
+        self.exit()
+
+    async def action_switch_view(self) -> None:
+        """Switch between views"""
+        action_logger.info("User switched view")
         self.is_main_view = not self.is_main_view
-        self.main_container.display = self.is_main_view
-        self.users_container.display = not self.is_main_view
 
 
 if __name__ == "__main__":
-    host = "http://localhost:8080"
-    manager = RUON(host=host)
-    manager.update_organizations()
-    for organization in manager.organizations:
-        manager.update_workspaces(organization.id)
-        manager.update_solutions(organization.id)
-        for workspace in manager.workspaces[organization.id]:
-            manager.update_runners(organization.id, workspace.id)
-    app = TUI(manager)
+    # host = "http://localhost:8080"
+    # manager = RUON(host=host)
+    # manager.connect()
+    # manager.update_organizations()
+    # for organization in manager.organizations:
+    #     manager.update_workspaces(organization.id)
+    #     manager.update_solutions(organization.id)
+    #     for workspace in manager.workspaces[organization.id]:
+    #         manager.update_runners(organization.id, workspace.id)
+    app = TUI()
     app.run()
