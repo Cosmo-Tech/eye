@@ -1,8 +1,10 @@
 #security {
   border: round $primary;
+  height: 100%;
 }
 #organization-view{
   border: round $primary;
+  width: 25;
 }
 #config-info{
   border: round $primary;

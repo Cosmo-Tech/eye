@@ -19,7 +19,8 @@ from pathlib import Path
 from rich.text import Text
 from rich.logging import RichHandler
 import logging
-
+from eye.views.security import Security
+from eye.views.organization import OrganizationView
 
 # Create loggers
 
@@ -35,32 +36,6 @@ class ConnectionStatus(Static):
         self.update(
             f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}"
         )
-
-
-class Security(Container):
-    def __init__(self, manager, organization, **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-        self.organization = organization
-
-    def compose(self) -> ComposeResult:
-        table = DataTable(id="security")
-        table.border_title = "Security"
-        df = self.manager.get_security_dataframe(self.organization)
-        table.add_columns("User", *df.columns.tolist())
-        for idx, row in df.iterrows():
-            table.add_row(idx, *row.tolist())
-        yield table
-
-    def update_security(self, organization) -> None:
-        self.organization = organization
-        table = self.query_one("#security", DataTable)
-        df = self.manager.get_security_dataframe(self.organization)
-        table.clear(columns=True)
-        table.add_columns("User", *df.columns.tolist())
-
-        for idx, row in df.iterrows():
-            table.add_row(idx, *row.tolist())
 
 
 class ConfigLabel(Label):
@@ -114,21 +89,16 @@ class TUI(App):
             id="config-info",
         )
         yield Footer()
-
-        organizations = [
-            ListItem(Label(item)) for item in self.manager.get_organization_list()
-        ]
-        self.organization_view = ListView(*organizations, id="organization-view")
-        self.organization_view.border_title = "Organizations"
+        self.organization_view = OrganizationView(self.manager, id="organization-view")
+        self.security_view = Security(
+            self.manager, self.active_organization, id="security_view"
+        )
         self.tree_view = self.build_tree()
         self.tree_view.border_title = "Object tree"
 
         self.pretty_view = Pretty({}, id="pretty")
-        self.security_view = Security(
-            self.manager, self.active_organization, id="security_view"
-        )
         # Main view components
-        self.main_container = Container(
+        self.users_container = Container(
             Horizontal(
                 Container(self.tree_view, id="tree-view"),
                 Container(
@@ -139,8 +109,8 @@ class TUI(App):
             id="main_view",
         )
         # Security view
-        self.users_container = Container(
-            Vertical(self.organization_view, self.security_view)
+        self.main_container = Container(
+            Horizontal(self.organization_view, self.security_view)
         )
         self.users_container.display = False
         yield self.main_container
@@ -198,30 +168,16 @@ class TUI(App):
     def refresh_views(self) -> None:
         """Update all view components"""
         logger.debug("Refreshing views")
-        # Update organization list
-        organizations = [
-            ListItem(Label(item)) for item in self.manager.get_organization_list()
-        ]
-        self.organization_view.clear()
-        self.organization_view.extend(organizations)
-
-        # Update object tree
-        new_tree = self.build_tree()
-        self.tree_view.root = new_tree.root
-
-        # Update security view if organization selected
-        if self.active_organization:
-            self.security_view.update_security(self.active_organization)
-
-        # Clear detail view
-        self.pretty_view.update({})
+        self.organization_view.update_organizations()
+        #self.security_view.update()
         logger.info("Views refreshed")
 
-    @on(ListView.Highlighted, "#organizations_view")
+    @on(ListView.Highlighted, "#organization-view")
     def organization_changed(self, message: ListView.Highlighted) -> None:
         organization = message.item.query_one(Label).renderable
-        self.active_organization = message.item.name
-        self.security_view.update_security(organization)
+        self.active_organization = organization
+        self.security_view.organization = self.active_organization
+        self.security_view.reload()
 
     @on(Tree.NodeSelected, "#object_view")
     def node_selected(self, message: Tree.NodeSelected) -> None:
