@@ -19,27 +19,28 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(message)s",
     datefmt="[%X]",
-    handlers=[RichHandler(rich_tracebacks=True, markup=True)]
+    handlers=[RichHandler(rich_tracebacks=True, markup=True)],
 )
 logger = logging.getLogger("back")
+
 
 class RUON:
     def __init__(self, host="http://localhost:8080"):
         logger.info(f"[bold blue]Initializing RUON[/] with host: {host}")
         start_time = time.time()
-        
+
         try:
             self.config = dotenv_values(".env")
             logger.debug("Loaded environment configuration")
             self.configuration = Configuration(host)
-            
+
             # Initialize empty collections
             self.workspaces = {}
             self.organizations = {}
             self.solutions = {}
             self.runners = {}
             self.run = {}
-            
+
             # Create API client and instances
             api_client = ApiClient(self.configuration)
             self.organization_api_instance = OrganizationApi(api_client)
@@ -47,10 +48,10 @@ class RUON:
             self.workspace_api_instance = WorkspaceApi(api_client)
             self.runner_api_instance = RunnerApi(api_client)
             self.run_api_instance = RunApi(api_client)
-            
+
             elapsed = time.time() - start_time
             logger.info(f"[green]✓[/] RUON initialized in {elapsed:.2f}s")
-            
+
         except Exception as e:
             logger.error(f"[red]Failed to initialize RUON:[/] {str(e)}")
             raise
@@ -77,7 +78,7 @@ class RUON:
             raise RuntimeError(f"Failed to refresh token: {e}")
 
     def load_token(self):
-        self.config = dotenv_values(".env") # refresh
+        self.config = dotenv_values(".env")  # refresh
         self.keycloak_openid = KeycloakOpenID(
             server_url=self.config["server_url"],
             client_id=self.config["client_id"],
@@ -102,9 +103,7 @@ class RUON:
         ]
 
     def get_workspace_list(self, organization_id):
-        return [
-            workspace.id for workspace in self.workspaces.get(organization_id, [])
-        ]
+        return [workspace.id for workspace in self.workspaces.get(organization_id, [])]
 
     def get_runner_list(self, organization_id, workspace_id):
         return [
@@ -153,8 +152,8 @@ class RUON:
                 org_id
             )
             for acl in org_security.access_control_list:
-                  role = acl.role or org_security.default
-                  data[acl.id] = role
+                role = acl.role or org_security.default
+                data[acl.id] = role
             return pd.Series(data)
         except Exception as e:
             print(f"Error getting organization security for {org_id}: {e}")
@@ -176,11 +175,21 @@ class RUON:
         # o-3wwx046jdwqe6 w-314qryelkyop5
         df = pd.DataFrame()
         organization_security = self.get_organization_security(organization_id)
-        df['organization'] = organization_security
+        df["organization"] = organization_security
         for workspace_id in self.get_workspace_list(organization_id):
-          workspace_security = self.get_workspace_security(organization_id, workspace_id)
-          df[workspace_id] = workspace_security
+            workspace_security = self.get_workspace_security(
+                organization_id, workspace_id
+            )
+            df[workspace_id] = workspace_security
         return df
+
+    def update_summary_data(self):
+        self.update_organizations()
+        for organization in self.organizations:
+            self.update_workspaces(organization.id)
+            self.update_solutions(organization.id)
+            for workspace in self.workspaces[organization.id]:
+                self.update_runners(organization.id, workspace.id)
 
 
 def build_tree(manager):

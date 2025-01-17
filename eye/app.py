@@ -20,60 +20,21 @@ from rich.text import Text
 from rich.logging import RichHandler
 import logging
 
+
 # Create loggers
 
 logger = logging.getLogger("back.front")
 action_logger = logging.getLogger("back.front.actions")
+
 
 class ConnectionStatus(Static):
     is_connected = reactive(False)
 
     def watch_is_connected(self, connected: bool) -> None:
         """React to connection status changes"""
-        self.update(f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}")
-
-class Solution(Widget):
-    def __init__(self, manager, organization, **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-        self.organization = organization
-
-    def compose(self) -> ComposeResult:
-        solutions = [
-            ListItem(Label(item))
-            for item in self.manager.get_solution_list(self.organization)
-        ]
-        self.solution_view = ListView(*solutions)
-        yield self.solution_view
-
-    def update_solutions(self, organization):
-        self.organization = organization
-        solutions = self.manager.get_solution_list(self.organization)
-        self.solution_view.clear()
-        for item in solutions:
-            self.solution_view.append(ListItem(Label(item)))
-
-
-class Workspace(Widget):
-    def __init__(self, manager, organization, **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-        self.organization = organization
-
-    def compose(self) -> ComposeResult:
-        workspaces = [
-            ListItem(Label(item))
-            for item in self.manager.get_workspace_list(self.organization)
-        ]
-        self.workspace_view = ListView(*workspaces)
-        yield self.workspace_view
-
-    def update_workspaces(self, organization):
-        self.organization = organization
-        workspaces = self.manager.get_workspace_list(self.organization)
-        self.workspace_view.clear()
-        for item in workspaces:
-            self.workspace_view.append(ListItem(Label(item)))
+        self.update(
+            f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}"
+        )
 
 
 class Security(Container):
@@ -101,6 +62,7 @@ class Security(Container):
         for idx, row in df.iterrows():
             table.add_row(idx, *row.tolist())
 
+
 class ConfigLabel(Label):
     def __init__(self, label_text: str, value_text: str) -> None:
         super().__init__("")
@@ -108,11 +70,12 @@ class ConfigLabel(Label):
         self.value_text = value_text
 
     def on_mount(self):
-        self.mount(
-            Label(f"[bold]{self.label_text}:[/] {self.value_text}")
-        )
+        self.mount(Label(f"[bold]{self.label_text}:[/] {self.value_text}"))
+
 
 class TUI(App):
+    """Main TUI application class"""
+
     BINDINGS = [
         ("h", "help", "Help"),
         ("q", "quit", "Quit"),
@@ -120,7 +83,8 @@ class TUI(App):
     ]
     CSS_PATH = Path(__file__).parent / "styles.tcss"
     active_organization = reactive("")
-    connection_status = reactive(False) # start offline
+    connection_status = reactive(False)  # start offline
+    data_refreshed = reactive(False)  # Track refresh state
 
     def __init__(self) -> None:
         logger.info("Initializing TUI application")
@@ -134,18 +98,20 @@ class TUI(App):
     def compose(self) -> ComposeResult:
         """Create children for layout"""
         logger.debug("Building UI layout")
-        yield Header(icon="⏿",
-                     show_clock=True,
-                     )
+        yield Header(
+            icon="⏿",
+            show_clock=True,
+        )
         yield Horizontal(
             Vertical(
-              ConfigLabel("host", self.manager.configuration.host),
-              ConfigLabel("server_url", self.manager.config['server_url']),
-              ConfigLabel("client_id", self.manager.config['client_id']),
-              ConfigLabel("realm_name", self.manager.config['realm_name']),
-              id = "config-parameters"
+                ConfigLabel("host", self.manager.configuration.host),
+                ConfigLabel("server_url", self.manager.config["server_url"]),
+                ConfigLabel("client_id", self.manager.config["client_id"]),
+                ConfigLabel("realm_name", self.manager.config["realm_name"]),
+                id="config-parameters",
             ),
-            self.status_indicator, id = "config-info"
+            self.status_indicator,
+            id="config-info",
         )
         yield Footer()
 
@@ -154,12 +120,6 @@ class TUI(App):
         ]
         self.organization_view = ListView(*organizations, id="organization-view")
         self.organization_view.border_title = "Organizations"
-        self.workspace_view = Workspace(
-            self.manager, self.active_organization, id="workspaces"
-        )
-        self.solution_view = Solution(
-            self.manager, self.active_organization, id="solutions"
-        )
         self.tree_view = self.build_tree()
         self.tree_view.border_title = "Object tree"
 
@@ -215,16 +175,53 @@ class TUI(App):
         try:
             self.manager.connect()
             self.status_indicator.is_connected = True
+            self.refresh_data()
         except Exception as e:
             logger.error(e)
-            
+
+    def refresh_data(self):
+        """Refresh all data and views"""
+        logger.info("Refreshing application data")
+        try:
+            self.manager.update_summary_data()
+            self.data_refreshed = True  # Trigger watch handlers
+            logger.debug("Data refresh completed")
+        except Exception as e:
+            logger.error(f"Data refresh failed: {e}")
+
+    def watch_data_refreshed(self, value: bool) -> None:
+        """React to data refresh"""
+        if value:
+            self.refresh_views()
+            self.data_refreshed = False  # Reset for next refresh
+
+    def refresh_views(self) -> None:
+        """Update all view components"""
+        logger.debug("Refreshing views")
+        # Update organization list
+        organizations = [
+            ListItem(Label(item)) for item in self.manager.get_organization_list()
+        ]
+        self.organization_view.clear()
+        self.organization_view.extend(organizations)
+
+        # Update object tree
+        new_tree = self.build_tree()
+        self.tree_view.root = new_tree.root
+
+        # Update security view if organization selected
+        if self.active_organization:
+            self.security_view.update_security(self.active_organization)
+
+        # Clear detail view
+        self.pretty_view.update({})
+        logger.info("Views refreshed")
+
     @on(ListView.Highlighted, "#organizations_view")
     def organization_changed(self, message: ListView.Highlighted) -> None:
         organization = message.item.query_one(Label).renderable
         self.active_organization = message.item.name
         self.security_view.update_security(organization)
-        # self.workspace_view.update_workspaces(organization)
-        # self.solution_view.update_solutions(organization)
 
     @on(Tree.NodeSelected, "#object_view")
     def node_selected(self, message: Tree.NodeSelected) -> None:
@@ -245,14 +242,5 @@ class TUI(App):
 
 
 if __name__ == "__main__":
-    # host = "http://localhost:8080"
-    # manager = RUON(host=host)
-    # manager.connect()
-    # manager.update_organizations()
-    # for organization in manager.organizations:
-    #     manager.update_workspaces(organization.id)
-    #     manager.update_solutions(organization.id)
-    #     for workspace in manager.workspaces[organization.id]:
-    #         manager.update_runners(organization.id, workspace.id)
     app = TUI()
     app.run()
