@@ -10,7 +10,6 @@ from rich.tree import Tree
 from rich.console import Console
 from rich.logging import RichHandler
 import pandas as pd
-from rich.pretty import pprint
 import time
 import logging
 
@@ -64,10 +63,6 @@ class RUON:
         except Exception as e:
             logger.error(f"[red]Connection failed:[/] {str(e)}")
             raise
-
-    def connected(self):
-        logger.debug(f"always say yes")
-        return True
 
     def refresh_token(self):
         try:
@@ -172,7 +167,6 @@ class RUON:
             print(f"Error getting workspace security for {workspace_id}: {e}")
 
     def get_security_dataframe(self, organization_id):
-        # o-3wwx046jdwqe6 w-314qryelkyop5
         df = pd.DataFrame()
         organization_security = self.get_organization_security(organization_id)
         df["organization"] = organization_security

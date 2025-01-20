@@ -1,23 +1,18 @@
 from textual.app import App, ComposeResult
 from textual.widgets import (
-    DataTable,
     Pretty,
     Tree,
     Footer,
     Header,
     ListView,
-    ListItem,
     Label,
     Static,
 )
 from textual.containers import Horizontal, Container, Vertical, VerticalScroll
-from textual.widget import Widget
 from textual.reactive import reactive
 from textual import on
 from eye.main import RUON
 from pathlib import Path
-from rich.text import Text
-from rich.logging import RichHandler
 import logging
 from eye.views.security import Security
 from eye.views.organization import OrganizationView
