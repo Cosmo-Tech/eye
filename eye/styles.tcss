@@ -1,4 +1,4 @@
-#security {
+#security-view {
   border: round $primary;
   height: 100%;
 }

@@ -23,7 +23,7 @@ client_secret_key="<client secret>"
 Port forward the services required by cosmotech-api (redis):
 
 ```shell
-kubectl port-forward cosmotechredis-<NAMESPACE>-master-0 6379:6379
+kubectl port-forward cosmotechredis-<NAMESPACE>-master-0 6379:6379 -n <NAMESPACE>
 ```
 and start a local api:
 

@@ -30,7 +30,6 @@ class RUON:
 
         try:
             self.config = dotenv_values(".env")
-            logger.debug("Loaded environment configuration")
             self.configuration = Configuration(host)
 
             # Initialize empty collections
@@ -151,7 +150,7 @@ class RUON:
                 data[acl.id] = role
             return pd.Series(data)
         except Exception as e:
-            print(f"Error getting organization security for {org_id}: {e}")
+            raise RuntimeError(f"Error getting organization security for {org_id}: {e}")
 
     def get_workspace_security(self, org_id, workspace_id):
         data = {}
@@ -164,7 +163,9 @@ class RUON:
                 data[acl.id] = role
             return pd.Series(data)
         except Exception as e:
-            print(f"Error getting workspace security for {workspace_id}: {e}")
+            raise RuntimeError(
+                f"Error getting workspace security for {workspace_id}: {e}"
+            )
 
     def get_security_dataframe(self, organization_id):
         df = pd.DataFrame()
