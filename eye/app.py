@@ -62,7 +62,6 @@ class TUI(App):
 
     def compose(self) -> ComposeResult:
         """Create children for layout"""
-        logger.debug("Building UI layout")
         yield Header(
             icon="⏿",
             show_clock=True,
@@ -88,7 +87,7 @@ class TUI(App):
         logger.info("TUI mounted")
         try:
             self.manager.connect()
-            self.manager.update_organizations()
+            self.manager.update_summary_data()
             self.status_indicator.is_connected = True
             self.refresh_data()
         except Exception as e:
@@ -107,7 +106,6 @@ class TUI(App):
 
     def refresh_views(self) -> None:
         """Update all view components"""
-        logger.debug("Refreshing views")
         self.organization_view.update_organizations()
         logger.info("Views refreshed")
 

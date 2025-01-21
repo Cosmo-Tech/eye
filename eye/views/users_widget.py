@@ -18,7 +18,7 @@ class UsersWidget(Widget):
             yield self.organization_view
             yield self.security_view
             
-    @on(OrganizationWidget.OrganizationSelected)
+    @on(OrganizationWidget.OrganizationHighlighted)
     def handle_organization_selected(self, event):
         """Update security view when an organization is selected"""
         self.security_view.organization = event.organization
