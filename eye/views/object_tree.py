@@ -5,7 +5,7 @@ from textual import on
 
 logger = logging.getLogger(__name__)
 
-class ObjectTree(Widget):
+class ObjectTreeWidget(Widget):
     """Tree widget to display organization objects"""
     
     def __init__(self, manager, **kwargs):

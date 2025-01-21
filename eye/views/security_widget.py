@@ -1,7 +1,7 @@
 from textual.containers import Container
 from textual.widgets import DataTable
 
-class Security(Container):
+class SecurityWidget(Container):
     """Security view component that displays user access permissions in a table"""
     
     def __init__(self, manager, organization, **kwargs):

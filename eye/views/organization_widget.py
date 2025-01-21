@@ -1,6 +1,6 @@
 from textual.widgets import ListView, ListItem, Label
 
-class OrganizationView(ListView):
+class OrganizationWidget(ListView):
     """Organization view component that displays list of organizations"""
     
     def __init__(self, manager, **kwargs):

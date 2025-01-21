@@ -14,8 +14,8 @@ from textual import on
 from eye.main import RUON
 from pathlib import Path
 import logging
-from eye.views.security import Security
-from eye.views.organization import OrganizationView
+from eye.views.security_widget import SecurityWidget
+from eye.views.organization_widget import OrganizationWidget
 
 # Create loggers
 
@@ -84,8 +84,8 @@ class TUI(App):
             id="config-info",
         )
         yield Footer()
-        self.organization_view = OrganizationView(self.manager, id="organization-view")
-        self.security_view = Security(
+        self.organization_view = OrganizationWidget(self.manager, id="organization-view")
+        self.security_view = SecurityWidget(
             self.manager, self.active_organization, id="security_view"
         )
         self.tree_view = self.build_tree()
