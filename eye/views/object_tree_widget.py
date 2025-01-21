@@ -5,13 +5,14 @@ from textual import on
 
 logger = logging.getLogger(__name__)
 
+
 class ObjectTreeWidget(Widget):
     """Tree widget to display organization objects"""
-    
+
     def __init__(self, manager, **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
-        self.mytree = Tree('root')
+        self.mytree = Tree("root")
         self.border_title = "Object tree"
 
     def on_mount(self):
@@ -25,7 +26,7 @@ class ObjectTreeWidget(Widget):
         self.mytree.clear()
         root = self.mytree.root
         root.expand()
-        
+
         for solution in self.manager.get_solutions():
             solution_node = root.add(solution.name, data=solution.data)
             for workspace in solution.workspaces:
@@ -44,7 +45,6 @@ class ObjectTreeWidget(Widget):
         if node.data:
             logger.info(f"Selected node: {node.label} with data: {node.data}")
             self.notify("eftase")
-
 
     def reload(self) -> None:
         """Reload tree data"""

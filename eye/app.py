@@ -43,10 +43,7 @@ class ConfigLabel(Label):
 class TUI(App):
     """Main TUI application class"""
 
-    BINDINGS = [
-        ("h", "help", "Help"),
-        ("q", "quit", "Quit")
-                ]
+    BINDINGS = [("h", "help", "Help"), ("q", "quit", "Quit")]
     CSS_PATH = Path(__file__).parent / "styles.tcss"
     active_organization = reactive("")
     connection_status = reactive(False)  # start offline

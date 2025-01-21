@@ -163,7 +163,9 @@ class RUON:
                 data[acl.id] = role
             return pd.Series(data)
         except Exception as e:
-            raise RuntimeError(f"Error getting workspace security for {workspace_id}: {e}")
+            raise RuntimeError(
+                f"Error getting workspace security for {workspace_id}: {e}"
+            )
 
     def get_security_dataframe(self, organization_id):
         df = pd.DataFrame()
