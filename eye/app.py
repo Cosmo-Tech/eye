@@ -1,7 +1,5 @@
 from textual.app import App, ComposeResult
 from textual.widgets import (
-    Pretty,
-    Tree,
     Footer,
     Header,
     ListView,
@@ -48,9 +46,8 @@ class TUI(App):
 
     BINDINGS = [
         ("h", "help", "Help"),
-        ("q", "quit", "Quit"),
-        ("s", "switch_view", "Switch View"),
-    ]
+        ("q", "quit", "Quit")
+                ]
     CSS_PATH = Path(__file__).parent / "styles.tcss"
     active_organization = reactive("")
     connection_status = reactive(False)  # start offline
@@ -88,51 +85,10 @@ class TUI(App):
         self.security_view = SecurityWidget(
             self.manager, self.active_organization, id="security_view"
         )
-        self.tree_view = self.build_tree()
-        self.tree_view.border_title = "Object tree"
-
-        self.pretty_view = Pretty({}, id="pretty")
-        # Main view components
-        self.users_container = Container(
-            Horizontal(
-                Container(self.tree_view, id="tree-view"),
-                Container(
-                    self.organization_view,
-                    VerticalScroll(self.pretty_view, id="detail-view"),
-                ),
-            ),
-            id="main_view",
-        )
-        # Security view
-        self.main_container = Container(
+        yield Container(
             Horizontal(self.organization_view, self.security_view)
         )
-        self.users_container.display = False
-        yield self.main_container
-        yield self.users_container
         logger.info("UI layout completed")
-
-    def build_tree(self):
-        tree = Tree("Objects", id="object_view")
-        tree.root.expand()
-        for organization in self.manager.organizations:
-            org_node = tree.root.add(organization.id, expand=True)
-            org_node.data = organization
-            for workspace in self.manager.workspaces.get(organization.id, []):
-                workspace_node = org_node.add(workspace.id)
-                workspace_node.data = workspace
-                for runner in self.manager.runners.get(
-                    (organization.id, workspace.id), []
-                ):
-                    runner_node = workspace_node.add(runner.id)
-                    runner_node.data = {
-                        "organization": organization.id,
-                        "workspace": workspace.id,
-                    }
-            for solution in self.manager.solutions.get(organization.id, []):
-                solution_node = org_node.add(solution.id)
-                solution_node.data = solution
-        return tree
 
     def on_mount(self) -> None:
         """Handle mount event"""
@@ -164,7 +120,6 @@ class TUI(App):
         """Update all view components"""
         logger.debug("Refreshing views")
         self.organization_view.update_organizations()
-        #self.security_view.update()
         logger.info("Views refreshed")
 
     @on(ListView.Highlighted, "#organization-view")
@@ -174,10 +129,6 @@ class TUI(App):
         self.security_view.organization = self.active_organization
         self.security_view.reload()
 
-    @on(Tree.NodeSelected, "#object_view")
-    def node_selected(self, message: Tree.NodeSelected) -> None:
-        self.pretty_view.update(message.node.data)
-
     def action_help(self) -> None:
         print("Need some help!")
 
@@ -185,11 +136,6 @@ class TUI(App):
         """Quit the application"""
         action_logger.info("User initiated quit")
         self.exit()
-
-    async def action_switch_view(self) -> None:
-        """Switch between views"""
-        action_logger.info("User switched view")
-        self.is_main_view = not self.is_main_view
 
 
 if __name__ == "__main__":
