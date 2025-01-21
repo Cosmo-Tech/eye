@@ -2,13 +2,11 @@ from textual.app import App, ComposeResult
 from textual.widgets import (
     Footer,
     Header,
-    ListView,
     Label,
     Static,
 )
-from textual.containers import Horizontal, Container, Vertical, VerticalScroll
+from textual.containers import Horizontal, Container, Vertical
 from textual.reactive import reactive
-from textual import on
 from eye.main import RUON
 from pathlib import Path
 import logging
@@ -45,14 +43,12 @@ class TUI(App):
 
     BINDINGS = [("h", "help", "Help"), ("q", "quit", "Quit")]
     CSS_PATH = Path(__file__).parent / "styles.tcss"
-    active_organization = reactive("")
     connection_status = reactive(False)  # start offline
     data_refreshed = reactive(False)  # Track refresh state
 
     def __init__(self) -> None:
         logger.info("Initializing TUI application")
         super().__init__()
-        self.organization_view = ListView()
         host = "http://localhost:8080"
         self.manager = RUON(host=host)
         self.status_indicator = ConnectionStatus(id="connection-indicator")
@@ -95,25 +91,8 @@ class TUI(App):
         logger.info("Refreshing application data")
         self.users_widget.reload()
 
-    def watch_data_refreshed(self, value: bool) -> None:
-        """React to data refresh"""
-        if value:
-            self.refresh_views()
-            self.data_refreshed = False  # Reset for next refresh
-
-    def refresh_views(self) -> None:
-        """Update all view components"""
-        self.organization_view.update_organizations()
-        logger.info("Views refreshed")
-
     def action_help(self) -> None:
         print("Need some help!")
-
-    async def action_quit(self) -> None:
-        """Quit the application"""
-        action_logger.info("User initiated quit")
-        self.exit()
-
 
 if __name__ == "__main__":
     app = TUI()
