@@ -151,7 +151,7 @@ class RUON:
                 data[acl.id] = role
             return pd.Series(data)
         except Exception as e:
-            print(f"Error getting organization security for {org_id}: {e}")
+            raise RuntimeError(f"Error getting organization security for {org_id}: {e}")
 
     def get_workspace_security(self, org_id, workspace_id):
         data = {}

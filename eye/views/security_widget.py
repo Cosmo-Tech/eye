@@ -10,12 +10,13 @@ class SecurityWidget(Container):
         self.organization = organization
 
     def compose(self):
-        self.table = DataTable(id="security")
+        self.table = DataTable(id="security-view")
         self.table.border_title = "Security"
         self.refresh()
         yield self.table
 
     def reload(self):
+        print(self.organization)
         df = self.manager.get_security_dataframe(self.organization)
         self.table.clear(columns=True)
         self.table.add_columns("User", *df.columns.tolist())
