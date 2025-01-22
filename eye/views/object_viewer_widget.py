@@ -10,8 +10,7 @@ class ObjectViewerWidget(Widget):
         self.view = Pretty(self.data)
 
     def compose(self):
-        with ScrollableContainer():
-            yield self.view
+        yield ScrollableContainer(self.view)
 
     def update_content(self, data: dict):
         self.data = data

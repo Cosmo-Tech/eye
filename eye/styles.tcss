@@ -12,6 +12,7 @@
 }
 #tree-view{
   border: round $primary;
+  width: auto;
 }
 #detail-view{
   border: round $primary;
