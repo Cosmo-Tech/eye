@@ -1,12 +1,4 @@
-from dataclasses import dataclass
-from textual.app import App, ComposeResult
 from textual.widgets import Tree
-from textual.widgets.tree import TreeNode
-from textual.widget import Widget
-from textual import on
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class ObjectTreeWidget(Tree):

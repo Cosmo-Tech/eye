@@ -87,7 +87,7 @@ class ObjectScreen(Screen):
 
     def compose(self):
         self.objects_widget = ObjectExplorerWidget(self.manager)
-        yield Header()
+        yield Header(icon="⏿", show_clock=True)
         yield self.objects_widget
         yield Footer()
 
@@ -142,7 +142,7 @@ class TUI(App):
                     raise
             try:
                 logger.info("Switching to user_screen")
-                self.push_screen("object_screen")
+                self.push_screen("user_screen")
             except Exception as e:
                 logger.error(f"Failed to switch screen: {str(e)}")
                 raise

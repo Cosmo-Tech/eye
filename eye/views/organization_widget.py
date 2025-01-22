@@ -2,9 +2,6 @@ from textual.widgets import OptionList
 from textual.widgets.option_list import Option
 from textual.message import Message
 from textual import on
-import logging
-
-debug_logger = logging.getLogger("back.front.debug")
 
 
 class OrganizationWidget(OptionList):
