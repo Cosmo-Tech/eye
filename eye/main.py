@@ -92,10 +92,10 @@ class RUON:
         return [organization.id for organization in self.organizations]
 
     def get_solution_list(self, organization_id):
-        return [
-            f"{solution.id}\n{solution.name}"
-            for solution in self.solutions.get(organization_id, [])
-        ]
+        return [solution.id for solution in self.solutions.get(organization_id, [])]
+
+    def get_solutions(self, organization_id):
+        return self.solutions.get(organization_id, [])
 
     def get_workspace_list(self, organization_id):
         return [workspace.id for workspace in self.workspaces.get(organization_id, [])]

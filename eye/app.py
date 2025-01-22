@@ -12,6 +12,7 @@ from eye.main import RUON
 from pathlib import Path
 import logging
 from eye.views.users_widget import UsersWidget
+from eye.views.object_explore_widget import ObjectExplorerWidget
 
 # Create loggers
 
@@ -76,8 +77,26 @@ class ConfigLabel(Label):
         self.mount(Label(f"[bold]{self.label_text}:[/] {self.value_text}"))
 
 class ObjectScreen(Screen):
+    def __init__(self, manager, **kwargs):
+        super().__init__(**kwargs)
+        self.manager = manager
+
     def compose(self):
-        yield Static("objects")
+        self.objects_widget = ObjectExplorerWidget(self.manager)
+        yield Header()
+        yield self.objects_widget
+        yield Footer()
+
+    def on_mount(self):
+        try:
+            self.manager.update_summary_data()
+            self.refresh_data()
+        except Exception as e:
+            logger.error(e)
+
+    def refresh_data(self):
+        self.objects_widget.reload()
+
 class TUI(App):
     """Main TUI application class"""
 
@@ -98,7 +117,7 @@ class TUI(App):
         self.status_indicator = ConnectionStatus(id="connection-indicator")
         self.screens = {
             "user_screen": UserScreen(self.manager),
-            "object_screen": ObjectScreen()
+            "object_screen": ObjectScreen(self.manager)
             }
 
 
@@ -117,7 +136,7 @@ class TUI(App):
                     raise
             try:
                 logger.info("Switching to user_screen")
-                self.push_screen("user_screen")
+                self.push_screen("object_screen")
             except Exception as e:
                 logger.error(f"Failed to switch screen: {str(e)}")
                 raise
