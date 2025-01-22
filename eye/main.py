@@ -85,6 +85,7 @@ class RUON:
         try:
             self.organizations = self.organization_api_instance.find_all_organizations()
         except Exception as e:
+            raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
 
     def get_organization_list(self):
