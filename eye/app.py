@@ -19,6 +19,7 @@ from eye.views.object_explore_widget import ObjectExplorerWidget
 logger = logging.getLogger("back.front")
 action_logger = logging.getLogger("back.front.actions")
 
+
 class UserScreen(Screen):
     def __init__(self, manager, **kwargs):
         super().__init__(**kwargs)
@@ -57,6 +58,8 @@ class UserScreen(Screen):
         """Refresh all data and views"""
         logger.info("Refreshing application data")
         self.users_widget.reload()
+
+
 class ConnectionStatus(Static):
     is_connected = reactive(False)
 
@@ -75,6 +78,7 @@ class ConfigLabel(Label):
 
     def on_mount(self):
         self.mount(Label(f"[bold]{self.label_text}:[/] {self.value_text}"))
+
 
 class ObjectScreen(Screen):
     def __init__(self, manager, **kwargs):
@@ -97,14 +101,17 @@ class ObjectScreen(Screen):
     def refresh_data(self):
         self.objects_widget.reload()
 
+
 class TUI(App):
     """Main TUI application class"""
 
-    BINDINGS = [("h", "help", "Help"),
-                ("q", "quit", "Quit"),
-                ("u", "users", "Users"),
-                ("o", "objects", "Objects")]
-    
+    BINDINGS = [
+        ("h", "help", "Help"),
+        ("q", "quit", "Quit"),
+        ("u", "users", "Users"),
+        ("o", "objects", "Objects"),
+    ]
+
     CSS_PATH = Path(__file__).parent / "styles.tcss"
     connection_status = reactive(False)  # start offline
     data_refreshed = reactive(False)  # Track refresh state
@@ -117,9 +124,8 @@ class TUI(App):
         self.status_indicator = ConnectionStatus(id="connection-indicator")
         self.screens = {
             "user_screen": UserScreen(self.manager),
-            "object_screen": ObjectScreen(self.manager)
-            }
-
+            "object_screen": ObjectScreen(self.manager),
+        }
 
     def on_mount(self) -> None:
         """Handle mount event"""

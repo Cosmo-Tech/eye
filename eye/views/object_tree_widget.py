@@ -15,7 +15,7 @@ class ObjectTreeWidget(Tree):
         self.manager = manager
         self.border_title = "Object tree"
         self.reload()
-    
+
     def reload(self):
         self.clear()
         self.root.expand()
@@ -25,7 +25,9 @@ class ObjectTreeWidget(Tree):
             for workspace in self.manager.workspaces.get(organization.id):
                 workspace_node = organization_node.add(workspace.id)
                 workspace_node.data = workspace
-                for runner in self.manager.runners.get((organization.id, workspace.id), []):
+                for runner in self.manager.runners.get(
+                    (organization.id, workspace.id), []
+                ):
                     runner_node = workspace_node.add(runner.id)
                     runner_node.data = runner
             for solution in self.manager.solutions.get(organization.id):
