@@ -1,63 +1,20 @@
-from textual.app import App, ComposeResult
+from textual.app import App
 from textual.widgets import (
-    Footer,
-    Header,
     Label,
     Static,
 )
-from textual.containers import Horizontal, Container, Vertical
 from textual.reactive import reactive
-from textual.screen import Screen
 from eye.main import RUON
 from pathlib import Path
 import logging
 from eye.views.users_widget import UsersWidget
-from eye.views.object_explore_widget import ObjectExplorerWidget
+from eye.views.user_screen import UserScreen
+from eye.views.object_screen import ObjectScreen
 
 # Create loggers
 
 logger = logging.getLogger("back.front")
 action_logger = logging.getLogger("back.front.actions")
-
-
-class UserScreen(Screen):
-    def __init__(self, manager, **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-        self.status_indicator = ConnectionStatus(id="connection-indicator")
-
-    def compose(self):
-        yield Header(
-            icon="⏿",
-            show_clock=True,
-        )
-        yield Horizontal(
-            Vertical(
-                ConfigLabel("host", self.manager.config["host"]),
-                ConfigLabel("server_url", self.manager.config["server_url"]),
-                ConfigLabel("client_id", self.manager.config["client_id"]),
-                ConfigLabel("realm_name", self.manager.config["realm_name"]),
-                id="config-parameters",
-            ),
-            self.status_indicator,
-            id="config-info",
-        )
-        self.users_widget = UsersWidget(self.manager)
-        yield Container(self.users_widget)
-        yield Footer()
-
-    def on_mount(self):
-        try:
-            self.manager.update_summary_data()
-            self.status_indicator.is_connected = True
-            self.refresh_data()
-        except Exception as e:
-            logger.error(e)
-
-    def refresh_data(self):
-        """Refresh all data and views"""
-        logger.info("Refreshing application data")
-        self.users_widget.reload()
 
 
 class ConnectionStatus(Static):
@@ -78,28 +35,6 @@ class ConfigLabel(Label):
 
     def on_mount(self):
         self.mount(Label(f"[bold]{self.label_text}:[/] {self.value_text}"))
-
-
-class ObjectScreen(Screen):
-    def __init__(self, manager, **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-
-    def compose(self):
-        self.objects_widget = ObjectExplorerWidget(self.manager)
-        yield Header(icon="⏿", show_clock=True)
-        yield self.objects_widget
-        yield Footer()
-
-    def on_mount(self):
-        try:
-            self.manager.update_summary_data()
-            self.refresh_data()
-        except Exception as e:
-            logger.error(e)
-
-    def refresh_data(self):
-        self.objects_widget.reload()
 
 
 class TUI(App):
