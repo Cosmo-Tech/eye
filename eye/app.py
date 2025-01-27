@@ -33,7 +33,7 @@ class UserScreen(Screen):
         )
         yield Horizontal(
             Vertical(
-                ConfigLabel("host", self.manager.configuration.host),
+                ConfigLabel("host", self.manager.config["host"]),
                 ConfigLabel("server_url", self.manager.config["server_url"]),
                 ConfigLabel("client_id", self.manager.config["client_id"]),
                 ConfigLabel("realm_name", self.manager.config["realm_name"]),
@@ -119,8 +119,7 @@ class TUI(App):
     def __init__(self) -> None:
         logger.info("Initializing TUI application")
         super().__init__()
-        host = "http://localhost:8080"
-        self.manager = RUON(host=host)
+        self.manager = RUON()
         self.status_indicator = ConnectionStatus(id="connection-indicator")
         self.screens = {
             "user_screen": UserScreen(self.manager),
