@@ -1,16 +1,12 @@
 from textual.app import App
-from textual.widgets import (
-    Label,
-    Static,
-)
 from textual.reactive import reactive
 from eye.main import RUON
 from pathlib import Path
 import logging
-from eye.views.users_widget import UsersWidget
 from eye.views.user_screen import UserScreen
 from eye.views.object_screen import ObjectScreen
 from eye.widgets.status import ConnectionStatus
+from eye.views.chatbot_screen import ChatBotScreen
 
 # Create loggers
 
@@ -28,6 +24,7 @@ class TUI(App):
         ("q", "quit", "Quit"),
         ("u", "users", "Users"),
         ("o", "objects", "Objects"),
+        ("b", "chatbot", "ChatBot")
     ]
 
     CSS_PATH = Path(__file__).parent / "styles.tcss"
@@ -42,6 +39,7 @@ class TUI(App):
         self.screens = {
             "user_screen": UserScreen(self.manager),
             "object_screen": ObjectScreen(self.manager),
+            "chatbot_screen": ChatBotScreen(self.manager)
         }
 
     def on_mount(self) -> None:
@@ -71,6 +69,9 @@ class TUI(App):
 
     def action_objects(self):
         self.switch_screen("object_screen")
+
+    def action_chatbot(self):
+        self.switch_screen("chatbot_screen")
 
     def action_help(self) -> None:
         print("Need some help!")
