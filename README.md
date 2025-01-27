@@ -11,9 +11,11 @@ uv pip install -e .
 ```
 
 ## Configuration
-Create a .env file with the following configuration:
+Create a .env file with the following configuration, replacing the <NAMESPACE> by
+your tenant name:
 
 ```shell
+host="https://kubernetes.cosmotech.com/cosmotech-api/<NAMESPACE>/v4"
 server_url="https://kubernetes.cosmotech.com/keycloak/"
 client_id="local test client"
 realm_name="<NAMESPACE>"

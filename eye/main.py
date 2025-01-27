@@ -24,13 +24,13 @@ logger = logging.getLogger("back")
 
 
 class RUON:
-    def __init__(self, host="http://localhost:8080"):
-        logger.info(f"[bold blue]Initializing RUON[/] with host: {host}")
+    def __init__(self):
+        logger.info(f"[bold blue]Initializing RUON[/]")
         start_time = time.time()
 
         try:
             self.config = dotenv_values(".env")
-            self.configuration = Configuration(host)
+            self.configuration = Configuration(self.config["host"])
 
             # Initialize empty collections
             self.workspaces = {}
@@ -203,8 +203,7 @@ def build_tree(manager):
 
 
 def main():
-    host = "http://localhost:8080"
-    manager = RUON(host=host)
+    manager = RUON()
     manager.connect()
     manager.update_organizations()
     for organization in manager.organizations:
