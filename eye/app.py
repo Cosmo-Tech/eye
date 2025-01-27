@@ -10,6 +10,7 @@ import logging
 from eye.views.users_widget import UsersWidget
 from eye.views.user_screen import UserScreen
 from eye.views.object_screen import ObjectScreen
+from eye.widgets.status import ConnectionStatus
 
 # Create loggers
 
@@ -17,24 +18,6 @@ logger = logging.getLogger("back.front")
 action_logger = logging.getLogger("back.front.actions")
 
 
-class ConnectionStatus(Static):
-    is_connected = reactive(False)
-
-    def watch_is_connected(self, connected: bool) -> None:
-        """React to connection status changes"""
-        self.update(
-            f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}"
-        )
-
-
-class ConfigLabel(Label):
-    def __init__(self, label_text: str, value_text: str) -> None:
-        super().__init__("")
-        self.label_text = label_text
-        self.value_text = value_text
-
-    def on_mount(self):
-        self.mount(Label(f"[bold]{self.label_text}:[/] {self.value_text}"))
 
 
 class TUI(App):

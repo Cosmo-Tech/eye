@@ -5,5 +5,8 @@ from textual.reactive import reactive
 class ConnectionStatus(Static):
     is_connected = reactive(False)
 
-    def watch_is_connected(self, value: bool) -> None:
-        self.update(content="Connected" if value else "Disconnected")
+    def watch_is_connected(self, connected: bool) -> None:
+        """React to connection status changes"""
+        self.update(
+            f"[{'green' if connected else 'red'}]●[/] {'Connected' if connected else 'Disconnected'}"
+        )
