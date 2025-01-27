@@ -5,7 +5,7 @@ description = "A sample Python project"
 authors = [{name = "Diamantis Sellis", email = "diamantis.sellis@cosmotech.com"}]
 license = { text = "MIT" }
 dependencies = [
-    "cosmotech-api", # don't use latest yet git+https://github.com/Cosmo-Tech/cosmotech-api-python-client.git
+    "cosmotech-api @git+https://github.com/Cosmo-Tech/cosmotech-api-python-client.git@4.0.0-dev9", # don't use latest yet @git+https://github.com/Cosmo-Tech/cosmotech-api-python-client.git
     "pytest>=8.3.4",
     "ruff>=0.8.4",
     "python-keycloak~=5.1.1",

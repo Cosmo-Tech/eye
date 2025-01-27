@@ -22,7 +22,7 @@ class UserScreen(Screen):
         )
         yield Horizontal(
             Vertical(
-                ConfigLabel("host", self.manager.configuration.host),
+                ConfigLabel("host", self.manager.config["host"]),
                 ConfigLabel("server_url", self.manager.config["server_url"]),
                 ConfigLabel("client_id", self.manager.config["client_id"]),
                 ConfigLabel("realm_name", self.manager.config["realm_name"]),
