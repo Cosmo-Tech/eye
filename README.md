@@ -22,17 +22,6 @@ realm_name="<NAMESPACE>"
 client_secret_key="<client secret>"
 ```
 
-Port forward the services required by cosmotech-api (redis):
-
-```shell
-kubectl port-forward cosmotechredis-<NAMESPACE>-master-0 6379:6379 -n <NAMESPACE>
-```
-and start a local api:
-
-```shell
-./gradlew :cosmotech-api:bootRun
-```
-
 ## Usage
 
 Activate the virtual environment:
@@ -52,4 +41,4 @@ or use the app:
 ```shell
 python3 eye/app.py
 ```
-to get a summary of users and their roles
+to get an various screens with an overview of the platform state
