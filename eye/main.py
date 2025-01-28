@@ -5,6 +5,11 @@ from cosmotech_api.api.workspace_api import WorkspaceApi
 from cosmotech_api.api.runner_api import RunnerApi
 from cosmotech_api.api.run_api import RunApi
 from cosmotech_api import ApiClient, Configuration
+from cosmotech_api.api.organization_api import OrganizationApi
+from cosmotech_api.models.organization import Organization
+from cosmotech_api.models.organization_security import OrganizationSecurity
+from cosmotech_api.models.organization_access_control import OrganizationAccessControl
+
 from keycloak import KeycloakOpenID
 from rich.tree import Tree
 from rich.console import Console
@@ -188,6 +193,41 @@ class RUON:
             for workspace in self.workspaces[organization.id]:
                 self.update_runners(organization.id, workspace.id)
 
+    def create_sample_organization(self):
+        try:
+            # Create the access control list
+            access_control_list = [
+                OrganizationAccessControl(
+                    id="jane.doe@cosmotech.com",
+                    role="editor"
+                ),
+                OrganizationAccessControl(
+                    id="john.doe@cosmotech.com",
+                    role="viewer"
+                )
+            ]
+
+            # Create the security settings
+            security = OrganizationSecurity(
+                default="reader",
+                access_control_list=access_control_list
+            )
+
+            # Create the organization object
+            organization = Organization(
+                name="Cosmo Tech",
+                security=security
+            )
+
+
+            # Register the organization
+            result = self.organization_api_instance.register_organization(organization)
+            logger.info(f"[green]✓ Organization created successfully with ID: {result.id}[/]")
+            return result
+
+        except Exception as e:
+            logger.error(f"[red]Failed to create organization:[/] {str(e)}")
+            raise
 
 def build_tree(manager):
     console = Console()
@@ -214,6 +254,7 @@ def main():
             manager.update_runners(organization.id, workspace.id)
     console, tree = build_tree(manager)
     console.print(tree)
+    manager.create_sample_organization()
 
 
 if __name__ == "__main__":
