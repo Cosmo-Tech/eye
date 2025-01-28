@@ -14,8 +14,6 @@ logger = logging.getLogger("back.front")
 action_logger = logging.getLogger("back.front.actions")
 
 
-
-
 class TUI(App):
     """Main TUI application class"""
 
@@ -24,7 +22,7 @@ class TUI(App):
         ("q", "quit", "Quit"),
         ("u", "users", "Users"),
         ("o", "objects", "Objects"),
-        ("b", "chatbot", "ChatBot")
+        ("b", "chatbot", "ChatBot"),
     ]
 
     CSS_PATH = Path(__file__).parent / "styles.tcss"
@@ -39,7 +37,7 @@ class TUI(App):
         self.screens = {
             "user_screen": UserScreen(self.manager),
             "object_screen": ObjectScreen(self.manager),
-            "chatbot_screen": ChatBotScreen(self.manager)
+            "chatbot_screen": ChatBotScreen(self.manager),
         }
 
     def on_mount(self) -> None:
