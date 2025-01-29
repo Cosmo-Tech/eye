@@ -73,9 +73,10 @@ class RUON:
 
     def load_token(self):
         self.config = dotenv_values(".env")  # refresh
+        self.config.setdefault("client_id", "cosmotech-api-client")
         self.keycloak_openid = KeycloakOpenID(
             server_url=self.config["server_url"],
-            client_id=self.config.get("client_id") or "cosmotech-api-client",
+            client_id=self.config.get("client_id"),
             realm_name=self.config["realm_name"],
             client_secret_key=self.config["client_secret"],
         )
