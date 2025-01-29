@@ -24,3 +24,9 @@
 #config-parameters{
   height: auto;
 }
+#user-input{
+  height: auto;
+}
+#chat-container{
+  height: auto;
+}
