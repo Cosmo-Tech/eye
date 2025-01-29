@@ -2,6 +2,7 @@ from textual.screen import Screen
 from textual.widgets import Input, Markdown, Header, Footer
 from textual.containers import Container, VerticalScroll
 from textual import on, work
+from textual import events
 import logging
 import os
 from ..llm import ChatAPI
@@ -29,6 +30,9 @@ class ChatBotScreen(Screen):
             Footer(),
         )
         yield container
+
+    def key_escape(self, event: events.Key):
+        self.set_focus(None)
 
     @on(Input.Submitted)
     def handle_input(self, event: Input.Submitted) -> None:
