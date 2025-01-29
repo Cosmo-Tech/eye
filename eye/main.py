@@ -75,7 +75,7 @@ class RUON:
         self.config = dotenv_values(".env")  # refresh
         self.keycloak_openid = KeycloakOpenID(
             server_url=self.config["server_url"],
-            client_id=self.config["client_id"],
+            client_id=self.config.get("client_id") or "cosmotech-api-client",
             realm_name=self.config["realm_name"],
             client_secret_key=self.config["client_secret"],
         )
@@ -211,7 +211,6 @@ def main():
         manager.update_solutions(organization.id)
         for workspace in manager.workspaces[organization.id]:
             manager.update_runners(organization.id, workspace.id)
-    manager.get_security_dataframe(manager.organizations[1].id)
     console, tree = build_tree(manager)
     console.print(tree)
 

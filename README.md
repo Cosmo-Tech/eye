@@ -17,7 +17,6 @@ your tenant name:
 ```shell
 host="https://kubernetes.cosmotech.com/cosmotech-api/<NAMESPACE>/v4"
 server_url="https://kubernetes.cosmotech.com/keycloak/"
-client_id="local test client"
 realm_name="<NAMESPACE>"
 client_secret_key="<client secret>"
 ```
