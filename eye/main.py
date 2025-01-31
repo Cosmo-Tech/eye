@@ -89,7 +89,7 @@ class RUON:
 
     def update_organizations(self):
         try:
-            self.organizations = self.organization_api_instance.find_all_organizations()
+            self.organizations = self.organization_api_instance.list_organizations()
         except Exception as e:
             raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
