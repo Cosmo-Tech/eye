@@ -9,7 +9,7 @@ from cosmotech_api.api.organization_api import OrganizationApi
 from cosmotech_api.models.organization import Organization
 from cosmotech_api.models.organization_security import OrganizationSecurity
 from cosmotech_api.models.organization_access_control import OrganizationAccessControl
-
+from cosmotech_api.models.organization_create_request import OrganizationCreateRequest
 from keycloak import KeycloakOpenID
 from rich.tree import Tree
 from rich.console import Console
@@ -17,6 +17,9 @@ from rich.logging import RichHandler
 import pandas as pd
 import time
 import logging
+
+# feature flag
+refactored = False
 
 # Configure Rich logger
 logging.basicConfig(
@@ -89,7 +92,10 @@ class RUON:
 
     def update_organizations(self):
         try:
-            self.organizations = self.organization_api_instance.list_organizations()
+            if refactored:
+                self.organizations = self.organization_api_instance.list_organizations()
+            else:
+                self.organizations = self.organization_api_instance.find_all_organizations()
         except Exception as e:
             raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
@@ -138,11 +144,18 @@ class RUON:
 
     def update_runs(self, organization_id, workspace_id, runner_id):
         try:
-            self.runs[organization_id, workspace_id, runner_id] = (
-                self.run_api_instance.find_all_runs(
-                    organization_id, workspace_id, runner_id
+            if refactored:
+                self.runs[organization_id, workspace_id, runner_id] = (
+                    self.run_api_instance.find_all_runs(
+                        organization_id, workspace_id, runner_id
+                    )
                 )
-            )
+            else:
+                self.runs[organization_id, workspace_id, runner_id] = (
+                    self.run_api_instance.list_runs(
+                        organization_id, workspace_id, runner_id
+                    )
+                )
         except Exception as e:
             print(f"error {e}")
 
@@ -193,41 +206,18 @@ class RUON:
             for workspace in self.workspaces[organization.id]:
                 self.update_runners(organization.id, workspace.id)
 
-    def create_sample_organization(self):
-        try:
-            # Create the access control list
-            access_control_list = [
-                OrganizationAccessControl(
-                    id="jane.doe@cosmotech.com",
-                    role="editor"
-                ),
-                OrganizationAccessControl(
-                    id="john.doe@cosmotech.com",
-                    role="viewer"
-                )
-            ]
+    def create_organization(self, organization):
+        if refactored:
+            logger.warning("Not implemented yet")
+        else:
+          try:
+              self.organization_api_instance.register_organization(organization)
+          except Exception as e:
+              logger.error(f"kati pige strava {e}")
 
-            # Create the security settings
-            security = OrganizationSecurity(
-                default="reader",
-                access_control_list=access_control_list
-            )
-
-            # Create the organization object
-            organization = Organization(
-                name="Cosmo Tech",
-                security=security
-            )
-
-
-            # Register the organization
-            result = self.organization_api_instance.register_organization(organization)
-            logger.info(f"[green]✓ Organization created successfully with ID: {result.id}[/]")
-            return result
-
-        except Exception as e:
-            logger.error(f"[red]Failed to create organization:[/] {str(e)}")
-            raise
+    def create_workspace(self, organization_id, workspace):
+        self.workspace_api_instance.create_workspace(organization_id, workspace)
+        pass
 
 def build_tree(manager):
     console = Console()
@@ -254,8 +244,6 @@ def main():
             manager.update_runners(organization.id, workspace.id)
     console, tree = build_tree(manager)
     console.print(tree)
-    manager.create_sample_organization()
-
 
 if __name__ == "__main__":
     main()
