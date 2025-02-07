@@ -95,7 +95,9 @@ class RUON:
             if refactored:
                 self.organizations = self.organization_api_instance.list_organizations()
             else:
-                self.organizations = self.organization_api_instance.find_all_organizations()
+                self.organizations = (
+                    self.organization_api_instance.find_all_organizations()
+                )
         except Exception as e:
             raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
@@ -210,14 +212,21 @@ class RUON:
         if refactored:
             logger.warning("Not implemented yet")
         else:
-          try:
-              self.organization_api_instance.register_organization(organization)
-          except Exception as e:
-              logger.error(f"kati pige strava {e}")
+            try:
+                self.organization_api_instance.register_organization(organization)
+            except Exception as e:
+                logger.error(f"kati pige strava {e}")
+
+    def delete_organization(self, organization_id):
+        try:
+            self.organization_api_instance.unregister_organization(organization_id)
+        except Exception as e:
+            logger.error(f"Unable to delete {organization_id}: {e}")
 
     def create_workspace(self, organization_id, workspace):
         self.workspace_api_instance.create_workspace(organization_id, workspace)
         pass
+
 
 def build_tree(manager):
     console = Console()
@@ -244,6 +253,7 @@ def main():
             manager.update_runners(organization.id, workspace.id)
     console, tree = build_tree(manager)
     console.print(tree)
+
 
 if __name__ == "__main__":
     main()
