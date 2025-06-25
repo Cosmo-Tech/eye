@@ -1,5 +1,5 @@
 # local development
-.env
+*~
 .vscode/
 
 # Python gitignore template
@@ -134,6 +134,7 @@ celerybeat.pid
 
 # Environments
 .env
+*.env
 .venv
 env/
 venv/
