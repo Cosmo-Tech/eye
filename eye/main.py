@@ -74,30 +74,36 @@ class RUON:
     def refresh_token(self):
         try:
             token = self.keycloak_openid.token(grant_type="client_credentials")
-            self.configuration.access_token = token["access_token"]
+            token_str = token["access_token"]
+            self.configuration.access_token = token_str
             self.token_expiry = time.time() + token["expires_in"]
         except Exception as e:
+            logger.error(f"Token refresh failed: {str(e)}")
             raise RuntimeError(f"Failed to refresh token: {e}")
 
     def load_token(self):
         self.config = dotenv_values(".env")  # refresh
         self.config.setdefault("client_id", "cosmotech-api-client")
-        self.keycloak_openid = KeycloakOpenID(
-            server_url=self.config["server_url"],
-            client_id=self.config.get("client_id"),
-            realm_name=self.config["realm_name"],
-            client_secret_key=self.config["client_secret"],
-        )
-        self.refresh_token()
+        try:
+            self.keycloak_openid = KeycloakOpenID(
+                server_url=self.config["server_url"],
+                client_id=self.config.get("client_id"),
+                realm_name=self.config["realm_name"],
+                client_secret_key=self.config["client_secret"],
+            )
+            self.refresh_token()
+        except KeyError as e:
+            logger.error(f"Missing required configuration: {str(e)}")
+            raise RuntimeError(f"Missing required configuration: {str(e)}")
+        except Exception as e:
+            logger.error(f"Failed to initialize Keycloak client: {str(e)}")
+            raise RuntimeError(f"Failed to initialize Keycloak client: {str(e)}")
 
     def update_organizations(self):
         try:
-            if refactored:
-                self.organizations = self.organization_api_instance.list_organizations()
-            else:
-                self.organizations = (
-                    self.organization_api_instance.find_all_organizations()
-                )
+            self.organizations = (
+                self.organization_api_instance.find_all_organizations()
+            )
         except Exception as e:
             raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
