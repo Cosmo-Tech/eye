@@ -92,15 +92,12 @@ class RUON:
 
     def update_organizations(self):
         try:
-            if refactored:
-                self.organizations = self.organization_api_instance.list_organizations()
-            else:
-                self.organizations = (
-                    self.organization_api_instance.find_all_organizations()
-                )
+            self.organizations = (
+                self.organization_api_instance.list_organizations()
+            )
         except Exception as e:
-            raise RuntimeError(f"Error getting organizations {e}")
             logger.error(f"error {e}")
+            raise RuntimeError(f"Error getting organizations {e}")
 
     def get_organization_list(self):
         return [organization.id for organization in self.organizations]
@@ -123,7 +120,7 @@ class RUON:
     def update_solutions(self, organization_id):
         try:
             self.solutions[organization_id] = (
-                self.solution_api_instance.find_all_solutions(organization_id)
+                self.solution_api_instance.list_solutions(organization_id)
             )
         except Exception as e:
             print(f"error {e}")
@@ -131,7 +128,7 @@ class RUON:
     def update_workspaces(self, organization_id):
         try:
             self.workspaces[organization_id] = (
-                self.workspace_api_instance.find_all_workspaces(organization_id)
+                self.workspace_api_instance.list_workspaces(organization_id)
             )
         except Exception as e:
             print(f"error {e}")
@@ -146,18 +143,11 @@ class RUON:
 
     def update_runs(self, organization_id, workspace_id, runner_id):
         try:
-            if refactored:
-                self.runs[organization_id, workspace_id, runner_id] = (
-                    self.run_api_instance.find_all_runs(
-                        organization_id, workspace_id, runner_id
-                    )
+            self.runs[organization_id, workspace_id, runner_id] = (
+                self.run_api_instance.list_runs(
+                    organization_id, workspace_id, runner_id
                 )
-            else:
-                self.runs[organization_id, workspace_id, runner_id] = (
-                    self.run_api_instance.list_runs(
-                        organization_id, workspace_id, runner_id
-                    )
-                )
+            )
         except Exception as e:
             print(f"error {e}")
 
@@ -209,13 +199,10 @@ class RUON:
                 self.update_runners(organization.id, workspace.id)
 
     def create_organization(self, organization):
-        if refactored:
-            logger.warning("Not implemented yet")
-        else:
-            try:
-                self.organization_api_instance.register_organization(organization)
-            except Exception as e:
-                logger.error(f"kati pige strava {e}")
+        try:
+            self.organization_api_instance.register_organization(organization)
+        except Exception as e:
+            logger.error(f"kati pige strava {e}")
 
     def delete_organization(self, organization_id):
         try:
