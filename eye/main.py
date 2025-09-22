@@ -117,7 +117,7 @@ class RUON:
                 organization_id
             )
         except Exception as e:
-            print(f"error {e}")
+            logger.error(f"error {e}")
 
     def update_workspaces(self, organization_id):
         try:
@@ -125,7 +125,7 @@ class RUON:
                 self.workspace_api_instance.list_workspaces(organization_id)
             )
         except Exception as e:
-            print(f"error {e}")
+            logger.error(f"error {e}")
 
     def update_runners(self, organization_id, workspace_id):
         try:
@@ -133,7 +133,7 @@ class RUON:
                 self.runner_api_instance.list_runners(organization_id, workspace_id)
             )
         except Exception as e:
-            print(f"error {e}")
+            logger.error(f"error {e}")
 
     def update_runs(self, organization_id, workspace_id, runner_id):
         try:
@@ -143,7 +143,7 @@ class RUON:
                 )
             )
         except Exception as e:
-            print(f"error {e}")
+            logger.error(f"error {e}")
 
     def get_organization_security(self, org_id):
         data = {}
