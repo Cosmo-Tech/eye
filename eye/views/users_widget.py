@@ -1,6 +1,6 @@
+from textual import on
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual import on
 
 from eye.views.organization_widget import OrganizationWidget
 from eye.views.security_widget import SecurityWidget

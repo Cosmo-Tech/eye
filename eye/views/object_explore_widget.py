@@ -1,6 +1,7 @@
-from textual.containers import Horizontal
 from textual import on
+from textual.containers import Horizontal
 from textual.widget import Widget
+
 from eye.views.object_tree_widget import ObjectTreeWidget
 from eye.views.object_viewer_widget import ObjectViewerWidget
 

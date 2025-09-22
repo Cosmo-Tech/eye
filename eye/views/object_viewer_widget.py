@@ -1,6 +1,6 @@
-from textual.widgets import Pretty
 from textual.containers import ScrollableContainer
 from textual.widget import Widget
+from textual.widgets import Pretty
 
 
 class ObjectViewerWidget(Widget):

@@ -1,8 +1,8 @@
-from textual.widgets import Tree
-from textual.notifications import Notify
+import logging
+
 from cosmotech_api.models.organization import Organization
 from cosmotech_api.models.workspace import Workspace
-import logging
+from textual.widgets import Tree
 
 logger = logging.getLogger(__name__)
 

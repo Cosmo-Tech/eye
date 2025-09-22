@@ -1,22 +1,18 @@
-from dotenv import dotenv_values
-from cosmotech_api.api.organization_api import OrganizationApi
-from cosmotech_api.api.solution_api import SolutionApi
-from cosmotech_api.api.workspace_api import WorkspaceApi
-from cosmotech_api.api.runner_api import RunnerApi
-from cosmotech_api.api.run_api import RunApi
+import logging
+import time
+
+import pandas as pd
 from cosmotech_api import ApiClient, Configuration
 from cosmotech_api.api.organization_api import OrganizationApi
-from cosmotech_api.models.organization import Organization
-from cosmotech_api.models.organization_security import OrganizationSecurity
-from cosmotech_api.models.organization_access_control import OrganizationAccessControl
-from cosmotech_api.models.organization_create_request import OrganizationCreateRequest
+from cosmotech_api.api.run_api import RunApi
+from cosmotech_api.api.runner_api import RunnerApi
+from cosmotech_api.api.solution_api import SolutionApi
+from cosmotech_api.api.workspace_api import WorkspaceApi
+from dotenv import dotenv_values
 from keycloak import KeycloakOpenID
-from rich.tree import Tree
 from rich.console import Console
 from rich.logging import RichHandler
-import pandas as pd
-import time
-import logging
+from rich.tree import Tree
 
 # feature flag
 refactored = False
@@ -33,7 +29,7 @@ logger = logging.getLogger("back")
 
 class RUON:
     def __init__(self):
-        logger.info(f"[bold blue]Initializing RUON[/]")
+        logger.info("[bold blue]Initializing RUON[/]")
         start_time = time.time()
 
         try:
@@ -92,9 +88,7 @@ class RUON:
 
     def update_organizations(self):
         try:
-            self.organizations = (
-                self.organization_api_instance.list_organizations()
-            )
+            self.organizations = self.organization_api_instance.list_organizations()
         except Exception as e:
             logger.error(f"error {e}")
             raise RuntimeError(f"Error getting organizations {e}")
@@ -119,8 +113,8 @@ class RUON:
 
     def update_solutions(self, organization_id):
         try:
-            self.solutions[organization_id] = (
-                self.solution_api_instance.list_solutions(organization_id)
+            self.solutions[organization_id] = self.solution_api_instance.list_solutions(
+                organization_id
             )
         except Exception as e:
             print(f"error {e}")

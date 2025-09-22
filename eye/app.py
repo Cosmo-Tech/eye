@@ -1,12 +1,14 @@
+import logging
+from pathlib import Path
+
 from textual.app import App
 from textual.reactive import reactive
+
 from eye.main import RUON
-from pathlib import Path
-import logging
-from eye.views.user_screen import UserScreen
-from eye.views.object_screen import ObjectScreen
-from eye.widgets.status import ConnectionStatus
 from eye.views.chatbot_screen import ChatBotScreen
+from eye.views.object_screen import ObjectScreen
+from eye.views.user_screen import UserScreen
+from eye.widgets.status import ConnectionStatus
 
 # Create loggers
 

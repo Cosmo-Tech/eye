@@ -1,10 +1,12 @@
-from textual.screen import Screen
-from textual.widgets import Header, Footer
-from textual.containers import Horizontal, Vertical, Container
 import logging
+
+from textual.containers import Container, Horizontal, Vertical
+from textual.screen import Screen
+from textual.widgets import Footer, Header
+
 from eye.views.users_widget import UsersWidget
-from eye.widgets.status import ConnectionStatus
 from eye.widgets.config_label import ConfigLabel
+from eye.widgets.status import ConnectionStatus
 
 logger = logging.getLogger("back.front")
 

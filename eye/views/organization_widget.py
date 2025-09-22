@@ -1,7 +1,7 @@
+from textual import on
+from textual.message import Message
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option
-from textual.message import Message
-from textual import on
 
 
 class OrganizationWidget(OptionList):
