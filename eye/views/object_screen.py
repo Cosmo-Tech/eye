@@ -1,6 +1,8 @@
-from textual.screen import Screen
-from textual.widgets import Header, Footer
 import logging
+
+from textual.screen import Screen
+from textual.widgets import Footer, Header
+
 from eye.views.object_explore_widget import ObjectExplorerWidget
 
 logger = logging.getLogger("back.front")

@@ -1,7 +1,8 @@
-from typing import List, Dict
-import os
-import aiohttp
 import logging
+import os
+from typing import Dict, List
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 

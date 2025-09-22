@@ -1,10 +1,11 @@
-from textual.screen import Screen
-from textual.widgets import Input, Markdown, Header, Footer
-from textual.containers import Container, VerticalScroll
-from textual import on, work
-from textual import events
 import logging
 import os
+
+from textual import events, on, work
+from textual.containers import Container, VerticalScroll
+from textual.screen import Screen
+from textual.widgets import Footer, Header, Input, Markdown
+
 from ..llm import ChatAPI
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class ChatBotScreen(Screen):
     async def get_bot_response(self, message: str) -> None:
         """Worker to get bot response asynchronously"""
         try:
-            response = await self.chat_api.send_message(message)
+            await self.chat_api.send_message(message)
             self.update_chat_display()
         except Exception as e:
             logger.error(f"Error getting bot response: {e}")
