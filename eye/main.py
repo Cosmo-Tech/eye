@@ -194,13 +194,13 @@ class RUON:
 
     def create_organization(self, organization):
         try:
-            self.organization_api_instance.register_organization(organization)
+            self.organization_api_instance.create_organization(organization)
         except Exception as e:
             logger.error(f"kati pige strava {e}")
 
     def delete_organization(self, organization_id):
         try:
-            self.organization_api_instance.unregister_organization(organization_id)
+            self.organization_api_instance.delete_organization(organization_id)
         except Exception as e:
             logger.error(f"Unable to delete {organization_id}: {e}")
 
