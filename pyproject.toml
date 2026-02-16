@@ -8,7 +8,7 @@ dependencies = [
     "cosmotech-api==5.0.0rc2",
     "pytest>=8.3.4",
     "ruff>=0.8.4",
-    "python-keycloak~=6.0.0",
+    "python-keycloak~=7.1.1",
     "python-dotenv",
     "rich>=13.9.4",
     "textual>=1.0.0",
